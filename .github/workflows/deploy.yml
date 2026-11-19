@@ -1,0 +1,104 @@
+# ─────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+#  deploy.yml · builds the portfolio and publishes it to GitHub Pages (https://janigam.github.io)
+#
+#  Mental model (the kitchen):
+#    workflow = this recipe card. GitHub runs every .yml file in .github/workflows/.
+#    trigger  = the order ticket that starts it (the `on:` block).
+#    runner   = a fresh Ubuntu VM GitHub lends us for each job. It starts empty and is wiped afterwards.
+#    job      = one station's task list. Each job gets its OWN runner, so jobs share no files.
+#    step     = one line on that list. Steps in a job run top to bottom on the same runner.
+#    action   = a ready-made step someone published, used with `uses: owner/name@version`.
+#    artifact = the packed box (our dist/ folder) handed from the build job to the deploy job.
+#
+#  Flow:  push to main ─► build (checkout, install, test, build, upload dist/) ─► deploy (publish to Pages)
+#  If any test fails, build stops, deploy never runs, and the live site stays on the last good version.
+# ─────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+
+# The label shown in the repo's Actions tab.
+name: Deploy to GitHub Pages
+
+# ── Triggers: when does this workflow run? ───────────────────────────────────────────────────────────────────────
+on:
+    # Every push to main deploys. Pushes to feature/* branches are ignored, so unfinished work never goes live.
+    push:
+        branches: [main]
+    # Adds a manual "Run workflow" button in the Actions tab, to redeploy without making a commit.
+    workflow_dispatch:
+
+# ── Permissions: what the run's temporary GITHUB_TOKEN may do (least privilege) ──────────────────────────────────
+# The token is created for each run and expires when the run ends. Anything not listed here is denied.
+permissions:
+    contents: read # read the code; cannot push commits
+    pages: write # publish to GitHub Pages
+    id-token: write # request a short-lived OIDC token so deploy-pages can prove "this run came from this repo"
+    #                 without us storing any password or secret
+
+# ── Concurrency: never run two deploys at once ──────────────────────────────────────────────────────────────────
+concurrency:
+    # A lane name. Runs in the same group wait for each other.
+    group: pages
+    # Let a deploy that is already running finish (cancelling mid-upload could leave a half-published site).
+    # GitHub keeps at most one run waiting, so with quick pushes only the newest one deploys next.
+    cancel-in-progress: false
+
+jobs:
+    # ── Job 1: build (the prep station) ──────────────────────────────────────────────────────────────────────────
+    # Turns the source code into the static site in dist/ and hands it over as an artifact. It publishes nothing.
+    build:
+        # The kind of fresh VM to run on.
+        runs-on: ubuntu-latest
+        steps:
+            # The runner starts empty: download this repo into it first.
+            - name: Check out the code
+              uses: actions/checkout@v4
+
+            # Install Node 24 (the version used locally). `@v4` pins the action's major version: bug fixes yes,
+            # surprise breaking changes no.
+            - name: Set up Node 24
+              uses: actions/setup-node@v4
+              with: # inputs passed to the action
+                node-version: 24
+                # Cache downloaded packages between runs. The cache key is a hash of package-lock.json, so a
+                # changed lockfile means a cache miss and a fresh install.
+                cache: npm
+
+            # Install EXACTLY what package-lock.json says. Fails if the lockfile is out of date, which is what CI
+            # wants (npm install could quietly change versions).
+            - name: Install dependencies
+              run: npm ci
+
+            # Unit tests for the terminal engine. One failure stops the job here, so nothing below runs.
+            - name: Run tests
+              run: npm test
+
+            # Type-check (tsc) and build (vite) into dist/.
+            - name: Build the site
+              run: npm run build
+
+            # Reads the repo's Pages settings so the Pages steps know where the site will live.
+            - name: Configure Pages
+              uses: actions/configure-pages@v5
+
+            # Packs dist/ into the special "github-pages" artifact that deploy-pages knows how to publish.
+            - name: Upload the built site
+              uses: actions/upload-pages-artifact@v3
+              with:
+                path: dist
+
+    # ── Job 2: deploy (the delivery station) ─────────────────────────────────────────────────────────────────────
+    # Runs on a different, fresh runner. No checkout, no Node: it can only publish what build produced.
+    deploy:
+        # The gate: wait for build to succeed. If build or the tests fail, this job is skipped.
+        needs: build
+        runs-on: ubuntu-latest
+        # A named deployment target. GitHub shows its URL on the repo page and keeps a deployment history.
+        # Protection rules (e.g. manual approval) can be added to it later without touching this file.
+        environment:
+            name: github-pages
+            # ${{ ... }} is an expression GitHub evaluates: the URL output of the step whose id is "deployment".
+            url: ${{ steps.deployment.outputs.page_url }}
+        steps:
+            # Publishes the uploaded artifact. Uses the pages + id-token permissions declared above.
+            - name: Publish to GitHub Pages
+              id: deployment
+              uses: actions/deploy-pages@v4
