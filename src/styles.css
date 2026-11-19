@@ -888,3 +888,10 @@ html[data-scanlines='true'] body::after {
   padding-left: 4ch;
   text-indent: -4ch;
 }
+
+/* Long URLs and emails must wrap on narrow phones instead of pushing the page sideways. */
+.pv-contact a,
+.pv-links a,
+.pv-log a {
+  overflow-wrap: anywhere;
+}

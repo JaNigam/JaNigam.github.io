@@ -29,10 +29,9 @@ const config: PortfolioConfig = {
     headline: 'Software Engineer · data platforms & GenAI tooling', // TODO(you): your one-line title
     location: 'India', // TODO(you): city, country
     about: [
-      // TODO(you): rewrite in your own voice. Two or three short paragraphs read best.
-      'I am a software engineer at Wells Fargo. I started in data engineering, moving millions of records a day through Spark pipelines, and now build full-stack services and GenAI tooling that other engineering teams rely on.',
-      'Most of what I ship is backend: Java and Spring Boot services, Kafka, Kubernetes, and the plumbing that turns a large language model from a demo into something 100+ teams use every sprint.',
-      'Right now I am going deep on JVM internals, concurrency and system design, and building Stackcraft, a platform that teaches exactly that.',
+      'I am a software engineer at Wells Fargo. I started in data engineering, moving millions of records a day through Spark pipelines, and I now build full-stack services and GenAI tooling that other engineering teams rely on.',
+      'Most of what I ship is backend: Java and Spring Boot services running on Kubernetes, and the plumbing that turns a large language model from a demo into something more than 100 teams use every sprint.',
+      'Right now I am going deep on JVM internals, concurrency, and system design. I am also building Stackcraft, a platform that teaches exactly that.',
     ],
     status: '', // e.g. 'Open to senior backend roles'. Empty hides it.
   },
@@ -150,14 +149,15 @@ const config: PortfolioConfig = {
   ],
 
   contact: {
-    email: '', // TODO(you): the address you want public. Empty hides it.
+    email: 'jayantnigam9@gmail.com', // shown publicly as a mailto link. Empty hides it.
     links: [
+      { label: 'linkedin', href: 'https://www.linkedin.com/in/jayantnigam' },
       { label: 'github', href: 'https://github.com/JaNigam' },
-      // TODO(you): { label: 'linkedin', href: 'https://www.linkedin.com/in/...' },
     ],
   },
 
-  // Drop your PDF at public/resume.pdf, then set this to '/resume.pdf'. Empty hides the download everywhere.
+  // To add a resume: put the PDF at public/resume.pdf, then set this to '/resume.pdf'. Empty hides the download
+  // everywhere (button, `resume` command, contact link). Use a version without your phone number: it is public.
   resume: '',
 
   // Hidden commands. They are not listed in `help`; finding one unlocks a quest.
