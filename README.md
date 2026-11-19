@@ -57,4 +57,9 @@ every command without a browser, and why CI can stop a broken config from going 
 ## Deploy
 
 GitHub Actions builds and publishes the site to GitHub Pages on every push to `main`. The workflow lives in
-`.github/workflows/deploy.yml`, and [docs/DEPLOY.md](docs/DEPLOY.md) explains it line by line.
+[`.github/workflows/deploy.yml`](.github/workflows/deploy.yml), and its comments explain it line by line.
+
+Flow: push to `main` → **build** job (checkout, `npm ci`, `npm test`, `npm run build`, upload `dist/`) → **deploy**
+job (publish to Pages). A failing test stops the build, so the live site stays on the last good version. Work on
+`feature/<name>` branches; only merging into `main` deploys. The Actions tab also has a **Run workflow** button to
+redeploy by hand.
