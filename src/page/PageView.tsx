@@ -170,7 +170,7 @@ export function PageView({ config, onSwitchView }: { config: PortfolioConfig; on
         </Section>
 
         {config.awards.length > 0 && (
-          <Section id="awards" cmd="awards" title="Awards">
+          <Section id="awards" cmd="awards" title="Awards & achievements">
             <ul className="pv-awards">
               {config.awards.map((a) => (
                 <li key={a.title}>

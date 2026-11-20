@@ -205,7 +205,7 @@ const commands: Command[] = [
   {
     name: 'awards',
     aliases: ['achievements'],
-    summary: 'recognition',
+    summary: 'awards & achievements',
     when: (c) => c.awards.length > 0,
     run: (_a, { config }) => {
       if (!config.awards.length) return { lines: [[t('Nothing here yet.', 'dim')]] };
