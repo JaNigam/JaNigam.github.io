@@ -131,6 +131,12 @@ const config: PortfolioConfig = {
       year: 'TODO(you)',
       note: 'For the GenAI release-note generator adopted by 100+ teams.',
     },
+    {
+      title: 'Certificate of Excellence',
+      issuer: 'Samsung PRISM, Samsung R&D Institute Bangalore',
+      year: '2022',
+      note: 'Top performance in the PRISM R&D program (Jun 2021 to Jan 2022): preference-based smart home automation using machine learning and ambient intelligence. Included a ₹15,000 cash prize.',
+    },
   ],
 
   // What you are learning or writing. Newest first.
